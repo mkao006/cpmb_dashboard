@@ -119,7 +119,7 @@ finalScorecards.df = merge(mSO.df,
 index = sapply(regexpr("\\(", finalScorecards.df$SERIES_NAME),
   FUN = function(x) x[[1]]) - 2
 index[index == -3] = 1000000L
-newQuantity = translateUnit(finalScorecards.df$MULTIPLIER)
+newQuantity = translateQuantity(finalScorecards.df$MULTIPLIER)
 newQuantity[is.na(newQuantity)] = ""
 
 trim <- function(x){
@@ -140,9 +140,9 @@ sortedFAO.df = arrange(finalScorecards.df,
     eval(parse(text = paste0("ORDER_", version))), FAOST_CODE, Year)
 
 
-
-sortedFAO.df[, "SERIES_NAME"] = sanitize2(sortedFAO.df[, "SERIES_NAME"],
-              type = "table")
+## Transform the text for LaTeX
+sortedFAO.df[, "SERIES_NAME"] =
+    sanitizeToLatex(sortedFAO.df[, "SERIES_NAME"], type = "table")
 
 ## Rename the columns
 colnames(sortedFAO.df)[colnames(sortedFAO.df) %in%
@@ -170,10 +170,10 @@ cat("\\documentclass{faoyearbook}\\begin{document}",
     file = paste0(path, texMetaFileName), append = FALSE)
 metaTable.df = dissemination.df[dissemination.df[,
     paste0("SCORECARD_", version)], ]
-metaTable.df[, "SERIES_NAME"] = sanitize2(metaTable.df[, "SERIES_NAME"],
-              type = "table")
-metaTable.df[, "INFO"] = sanitize2(metaTable.df[, "INFO"],
-              type = "table")
+metaTable.df[, "SERIES_NAME"] =
+    sanitizeToLatex(metaTable.df[, "SERIES_NAME"], type = "table")
+metaTable.df[, "INFO"] =
+    sanitizeToLatex(metaTable.df[, "INFO"], type = "table")
 for(i in 1:NROW(metaTable.df)){
   cat("\\begin{metadata}{", metaTable.df[i, "SERIES_NAME"] ,"}{",
       metaTable.df[i, "DATA_KEY"], "}", metaTable.df[i, "INFO"],
