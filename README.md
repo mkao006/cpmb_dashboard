@@ -40,4 +40,22 @@ make
 ```
 
 To produce all four version of the report for each of the SO
-dashboard, otherwise manually change them in *generate_dashboard.R*
+dashboard. 
+
+To make specific version:
+
+```
+### Make SO1 version A
+make so1a
+
+## Make all SO1 deshboard
+make so1pdf
+```
+
+
+If *Make* is not available, then manually change them in
+*generate_dashboard.R* to generate the desired dashboard and the
+folders become irrelevant.
+
+
+
