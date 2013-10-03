@@ -14,7 +14,7 @@ soSplitFile = function(data){
   for(i in seq_along(soNames)){
     cat(names(so.lst)[i], ":", NROW(so.lst[[i]]), "variables. \n")
     write.csv(so.lst[[i]],
-              file = paste0("./scorecard_", soNames[i], "/",
+              file = paste0("./dashboard_", soNames[i], "/",
               soNames[i], "_dissemination.csv"), row.names = FALSE,
               na = "")
   }

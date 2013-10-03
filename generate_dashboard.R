@@ -4,16 +4,16 @@
 ########################################################################
 
 
-SO = "so1"
-path = paste0(getwd(), "/scorecard_", SO,"/")
+SO = "so5"
+path = paste0(getwd(), "/dashboard_", SO,"/")
 template = "timeseries"
-version = "A"
-texFileName = paste0(SO, "scorecardsFAO", template, version, ".tex")
+version = "B"
+texFileName = paste0(SO, "dashboard", template, version, ".tex")
 pdfFileName = gsub("tex", "pdf", texFileName)
 
 ## Data are taken from the Statistical yearbook for consistency
 library(FAOSTAT)
-source("package_scorecard.R")
+source("dashboard_package.R")
 source("metaToDissemination.R")
 
 ## Load dissemination file
@@ -153,7 +153,7 @@ scorecard.df = sortedFAO.df[, c("areaCode", "areaName", "Year",
   "variable", "indicatorName", "topic", "value")]
 
 set.seed(587)
-mySampleCountry = sample(x = scorecard.df$areaCode, size = 25)
+mySampleCountry = sample(x = scorecard.df$areaCode, size = 10)
 scorecardFAO(variable = unique(scorecard.df$variable),
              data = scorecard.df[scorecard.df$areaCode %in%
                  mySampleCountry, ],
@@ -162,7 +162,7 @@ scorecardFAO(variable = unique(scorecard.df$variable),
              layout = template)
 
 ## Create meta data table
-texMetaFileName = gsub("\\.", "Meta.", texFileName)
+texMetaFileName = paste0(SO, "dashboard", version, "Meta.tex")
 pdfMetaFileName = gsub("tex", "pdf", texMetaFileName)
 
 
