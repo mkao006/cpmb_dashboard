@@ -8,9 +8,6 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
 
   layout = match.arg(layout)
 
-  ## if(layout == "benchmark" & is.missing(baseline))
-  ##   baseline = as.numeric(format(Sys.Date(), "%Y"))
-
   ## Create the preembles of the latex document
   cat("\\documentclass{article}
        \\usepackage{faoscorecard}
@@ -33,6 +30,8 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
        \\def\\@@sub#1{\\@ifnextchar^{\\@sub@super{#1}}{\\textsubscript{#1}}}
        \\def^{\\let\\@next\\relax\\ifmmode\\@super\\else\\let\\@next\\@@super\\fi\\@next}
        \\def_{\\let\\@next\\relax\\ifmmode\\@sub\\else\\let\\@next\\@@sub\\fi\\@next}
+     \\renewcommand\\scorecardname{Dashboard}
+     \\renewcommand\\listofscorecardsname{List of Dashboards}
      \\makeatother
      \\begin{document}
      \\listofscorecards
@@ -46,7 +45,7 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
            \\begin{scorecard}{lccccccc}
            \\caption{",
           unique(data[data$areaCode == i, "areaName"]),
-          " Scorecard} \\\\
+          " Dashboard} \\\\
           \\scorecardcolhead{1}{c}{Indicator Name and unit} & 
           \\scorecardcolhead{2}{c}{Baseline} & 
           \\scorecardcolhead{2}{c}{Current} & 
@@ -62,7 +61,7 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
           \\endfirsthead
           \\caption[]{",
           unique(data[data$areaCode == i, "areaName"]),
-          " Scorecard (continued)} \\\\
+          " Dashboard (continued)} \\\\
           \\scorecardcolhead{1}{c}{Indicator Name and unit} & 
           \\scorecardcolhead{2}{c}{Baseline} & 
           \\scorecardcolhead{2}{c}{Current} & 
@@ -102,7 +101,7 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
                 sep = "", collapse = " &\n"),
           "& \\scorecardcolhead{1}{c}{Trend}
 
-\\endfirsthead
+          \\endfirsthead
           \\caption[]{Trends for ",
           unique(data[data$areaCode == i, "areaName"]),
           " (continued)} \\\\
@@ -144,13 +143,9 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
     cat(unique(tmp.df$indicatorName), file = file, append = TRUE)
     cat(" & ", file = file, append = TRUE)
     if(layout == "benchmark"){
-      ## if(missing(baselineYear))
-
       ## Print the baseline and current year
-      ## print(tmp.df[, c("Year", "value")])      
       baselineYear = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
         Year == max(Year), select = Year))
-      ## print(baselineYear)
       baseValue = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
         Year == baselineYear, select = value))
       cat(ifelse(length(baseValue) == 0L, "",
@@ -170,9 +165,10 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
       cat(" & ", file = file, append = TRUE)      
       cat(maxYear, file = file, append = TRUE)
       cat(" & ", file = file, append = TRUE)
-      ## Artificial for the empty target column
+      ## TODO (Michael): Insert code for targets
       cat(" & ", file = file, append = TRUE)
 
+      ## Make the sparkline
       spark.df = tmp.df[tmp.df$Year %in% startYear:endYear, ]
 
       validValues = which(!is.na(spark.df$value) &
@@ -193,32 +189,9 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
         cat("\n \\end{sparkline}", file = file, append = TRUE)
       }      
       
-      ## missingValues = which(is.na(spark.df$value))
-      ## values = spark.df[-missingValues, "value"]
-      ## years = spark.df[-missingValues, "Year"]
-      ## x = (years - min(years))/(max(years) - min(years))
-      ## if(length(na.omit(values)) > 5){
-      ##   values = values/(max(values, na.rm = TRUE) * 1.2)
-      ##   n.values = length(values)
-      ##   x = seq(0, 1, length.out = n.values)
-      ##   cat("\n \\begin{sparkline}{", length(values), "}",
-      ##       file = file, append = TRUE)
-      ##   if(addPoints){
-      ##     cat("\n", paste(paste("\\sparkdot", x,
-      ##                           values, "red", sep = " "),
-      ##                     collapse = " "),
-      ##         file = file, append = TRUE)
-      ##   }
-      ##   cat("\n \\spark", paste(paste(x, values, sep = " "),
-      ##                           collapse = " "),
-      ##       "/", file = file, append = TRUE)
-      ##   cat("\n \\end{sparkline}", file = file, append = TRUE)
-      ## }
       cat("\\\\", file = file, append = TRUE)
     } else {
       
-      ## startYear = (as.numeric(format(Sys.Year(), "%Y")) - 11)
-      ## endYear = as.numeric(format(Sys.Year(), "%Y")) - 1
       spark.df = tmp.df[tmp.df$Year %in% startYear:endYear, ]
       cat(paste(gsub("NA|NaN", "",
                      formatC(spark.df$value, digit = 2, format = "fg")),
@@ -246,86 +219,92 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
   }
 }
 
-sanitize2 = function(str, html = FALSE, type = c("text", "table")){
-  
-  type <- match.arg(type)
-  
-  result <- as.character(str)
-  
-  result <- gsub("\\\\-","TEX.BACKSLASH",result)
-  result <- gsub("\\\\","SANITIZE.BACKSLASH",result)
-  result <- gsub("$","\\$",result,fixed=TRUE)
-  result <- gsub(">","$>$",result,fixed=TRUE)
-  result <- gsub("<","$<$",result,fixed=TRUE)
-  result <- gsub("|","$|$",result,fixed=TRUE)
-  result <- gsub("{","\\{",result,fixed=TRUE)
-  result <- gsub("}","\\}",result,fixed=TRUE)
-  result <- gsub("%","\\%",result,fixed=TRUE)
-  result <- gsub("&","\\&",result,fixed=TRUE)
-  result <- gsub("_","\\_",result,fixed=TRUE)
-  ## result <- gsub("_", "\\textsubscript", result, fixed = TRUE)
-  result <- gsub("#","\\#",result,fixed=TRUE)
-  result <- gsub("^", ifelse(type == "table", "\\verb|^|",
-                             "\\textsuperscript "), result,fixed = TRUE)
-  result <- gsub("~","\\~{}",result,fixed=TRUE)
-  result <- gsub("Ã´","\\^{o}",result,fixed=TRUE)
-  result <- gsub("Ã¢","\\^{a}",result,fixed=TRUE)
-  result <- gsub("Ã¨","\\`{e}",result,fixed=TRUE)
-  result <- gsub("Ã©","\\'{e}",result,fixed=TRUE)
-  result <- gsub("SANITIZE.BACKSLASH","$\\backslash$",result,fixed=TRUE)
-  result <- gsub("TEX.BACKSLASH","\\-",result,fixed=TRUE)
-
-  if(html) {
-    result <- gsub("( www.[0-9A-Za-z./\\-\\_]*)"," \\\\url{\\1}",result)
-    result <- gsub("(http://(www.)*[0-9A-Za-z./\\-\\_]*)",
-                   "\\\\url{\\1}",result)
-    dotSlash<-grepl("\\url\\{.*\\.}",result)
-    result[dotSlash] <- gsub("\\.\\}","\\}\\.",result[dotSlash])
-  }
-  
-  ## special expressions
-  result <- gsub("km2", "km\\textsuperscript{2}", result, fixed = TRUE)
-  ## result <- gsub("km2", "km^2", result, fixed = TRUE)
-  result <- gsub("m3", "m\\textsuperscript{3}", result, fixed = TRUE)
-  result <- gsub("CO2", "CO\\textsubscript{2}", result, fixed = TRUE)
-  
-  
-  return(result)
+sanitizeToLatex = function(str, html=FALSE, type=c("text","table")) {
+    
+    type = match.arg(type)
+    
+    result = as.character(str)
+    
+    result = gsub("\\\\-","TEX.BACKSLASH",result)
+    result = gsub("\\\\","SANITIZE.BACKSLASH",result)
+    result = gsub("$","\\$",result,fixed=TRUE)
+    result = gsub(">","$>$",result,fixed=TRUE)
+    result = gsub("<","$<$",result,fixed=TRUE)
+    result = gsub("|","$|$",result,fixed=TRUE)
+    result = gsub("{","\\{",result,fixed=TRUE)
+    result = gsub("}","\\}",result,fixed=TRUE)
+    result = gsub("%","\\%",result,fixed=TRUE)
+    result = gsub("&","\\&",result,fixed=TRUE)
+    result = gsub("_","\\_",result,fixed=TRUE)
+    ## result = gsub("_", "\\textsubscript", result, fixed = TRUE)
+    result = gsub("#","\\#",result,fixed=TRUE)
+    result = gsub("^", ifelse(type == "table", "\\verb|^|",
+                               "\\textsuperscript "), result,fixed = TRUE)
+    result = gsub("~","\\~{}",result,fixed=TRUE)
+    result = gsub("ÃƒÂ´","\\^{o}",result,fixed=TRUE)
+    result = gsub("ô","\\^{o}",result,fixed=TRUE)
+    result = gsub("ÃƒÂ¢","\\^{a}",result,fixed=TRUE)
+    result = gsub("ÃƒÂ¨","\\`{e}",result,fixed=TRUE)
+    result = gsub("è","\\`{e}",result,fixed=TRUE)
+    result = gsub("ÃƒÂ©","\\'{e}",result,fixed=TRUE)
+    result = gsub("é","\\'{e}",result,fixed=TRUE)
+    result = gsub("Å","\\r{A}",result,fixed=TRUE)
+    result = gsub("ç","\\c{c}",result,fixed=TRUE)
+    result = gsub("SANITIZE.BACKSLASH","$\\backslash$",result,fixed=TRUE)
+    result = gsub("TEX.BACKSLASH","\\-",result,fixed=TRUE)
+    if(html) {
+        result = gsub("( www.[0-9A-Za-z./\\-\\_]*)"," \\\\url{\\1}",result)
+      	result = gsub("(http://(www.)*[0-9A-Za-z./\\-\\_]*)","\\\\url{\\1}",result)
+      	dotSlash=grepl("\\url\\{.*\\.}",result)
+      	result[dotSlash] = gsub("\\.\\}","\\}\\.",result[dotSlash])
+    }
+    
+    ## special expressions
+    result = gsub("km2", "km\\textsuperscript{2}", result, fixed = TRUE)
+    result = gsub("m3", "m\\textsuperscript{3}", result, fixed = TRUE)
+    result = gsub("CO2", "CO\\textsubscript{2}", result, fixed = TRUE)
+    
+    
+    return(result)
 }
 
-translateUnit = function(vec){
-  type = mode(vec)
-  if(type == "character"){
-    if(!(all(unique(vec) %in% c("hundred", "thousand", "million",
-                                "billion", "trillion", NA))))
-      stop("Unrecognised name")
-    transVec = double(length(vec))
-    transVec[which(vec == "hundred")] = 100
-    transVec[which(vec == "thousand")] = 1000
-    transVec[which(vec == "million")] = 1e6
-    transVec[which(vec == "billion")] = 1e9
-    transVec[which(vec == "trillion")] = 1e12
-    transVec[is.na(vec)] = NA
-  } else if(type == "numeric"){
-    if(!(all(unique(vec) %in% c(1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7,
-                                1e8, 1e9, 1e12, NA))))
-      stop("The unit does not have a character name available to translate")
-    transVec = character(length(vec))
-    transVec[which(vec == 1)] = ""
-    transVec[which(vec == 10)] = ""
-    transVec[which(vec == 100)] = "hundred"
-    transVec[which(vec == 1000)] = "thousand"
-    transVec[which(vec == 10000)] = "ten thousand"
-    transVec[which(vec == 1e5)] = "hundred thousand"
-    transVec[which(vec == 1e6)] = "million"
-    transVec[which(vec == 1e7)] = "ten million"
-    transVec[which(vec == 1e8)] = "hundred million"
-    transVec[which(vec == 1e9)] = "billion"
-    transVec[which(vec == 1e12)] = "trillion"
-    transVec[is.na(vec)] = NA
-  } else {
-    stop("The type of vector can not be translated")
-  }
-  names(transVec) = names(vec)
-  transVec
+translateQuantity = function(vec){
+    type = mode(vec)
+    if(type == "character"){
+        if(!(all(unique(vec) %in%
+                 c("hundred", "thousand", "ten thousand",
+                   "hundred thousand", "million", "ten million",
+                   "hundred million", "billion", "trillion", NA))))
+            stop("Unrecognised name")
+        transVec = double(length(vec))
+        transVec[which(vec == "hundred")] = 100
+        transVec[which(vec == "thousand")] = 1000
+        transVec[which(vec == "ten thousand")] = 10000
+        transVec[which(vec == "hundred thousand")] = 100000    
+        transVec[which(vec == "million")] = 1e6
+        transVec[which(vec == "ten million")] = 1e7
+        transVec[which(vec == "hundred million")] = 1e8    
+        transVec[which(vec == "billion")] = 1e9
+        transVec[which(vec == "trillion")] = 1e12
+    } else if(type == "numeric"){
+        if(!(all(unique(vec) %in% c(1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7,
+                                    1e8, 1e9, 1e12, NA))))
+            stop("The unit does not have a character name available to translate")
+        transVec = character(length(vec))
+        transVec[which(vec == 1)] = ""
+        transVec[which(vec == 10)] = ""
+        transVec[which(vec == 100)] = "hundred"
+        transVec[which(vec == 1000)] = "thousand"
+        transVec[which(vec == 10000)] = "ten thousand"
+        transVec[which(vec == 1e5)] = "hundred thousand"
+        transVec[which(vec == 1e6)] = "million"
+        transVec[which(vec == 1e7)] = "ten million"
+        transVec[which(vec == 1e8)] = "hundred million"
+        transVec[which(vec == 1e9)] = "billion"
+        transVec[which(vec == 1e12)] = "trillion"
+    } else {
+        stop("The type of vector can not be translated")
+    }
+    names(transVec) = names(vec)
+    transVec
 }
