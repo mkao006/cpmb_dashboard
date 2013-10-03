@@ -13,7 +13,7 @@ operating system.
 * **meta_data_new.csv**
 
 This is file contains the dissemination information, the file was
-received from Adam Prakash. It is used to decide what variables are
+received from Adam Prakash (ESS). It is used to decide what variables are
 included in each of the Strategic Objective dashboard.
 
 * **dashboard_package.R**
@@ -23,7 +23,11 @@ This script contains all the necessary function to generate the dashboard.
 * **generate_dashboard.R**
 
 This script generates the dashboards depending on the initial
-parameter and the template type.
+parameter and the template type. 
+
+**The data is currently linked to the Statistical Year Book database
+  and is thus not available, to obtain the data please contact Filippo
+  Gheri (ESS)**
 
 * **radarChart.R**
 
