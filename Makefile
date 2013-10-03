@@ -145,7 +145,7 @@ clean:
 	$(RM) $(addprefix ./dashboard_so4/, $(objects))
 	$(RM) $(addprefix ./dashboard_so5/, $(objects))
 
-veryclean: 
+veryclean: clean
 	$(RM) $(addprefix ./dashboard_so1/, $(objectspdf))
 	$(RM) $(addprefix ./dashboard_so2/, $(objectspdf))
 	$(RM) $(addprefix ./dashboard_so3/, $(objectspdf))
