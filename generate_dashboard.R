@@ -4,10 +4,10 @@
 ########################################################################
 
 
-SO = "so5"
+SO = "so2"
 path = paste0(getwd(), "/dashboard_", SO,"/")
-template = "timeseries"
-version = "B"
+template = "benchmark"
+version = "A"
 texFileName = paste0(SO, "dashboard", template, version, ".tex")
 pdfFileName = gsub("tex", "pdf", texFileName)
 
