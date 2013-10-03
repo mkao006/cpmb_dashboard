@@ -16,20 +16,20 @@ This is file contains the dissemination information, the file was
 received from Adam Prakash (ESS). It is used to decide what variables are
 included in each of the Strategic Objective dashboard.
 
-* **dashboard_package.R**
+### **dashboard_package.R**
 
 This script contains all the necessary function to generate the dashboard.
 
-* **generate_dashboard.R**
+### **generate_dashboard.R**
 
 This script generates the dashboards depending on the initial
 parameter and the template type. 
 
 **The data is currently linked to the Statistical Year Book database
-  and is thus not available, to obtain the data please contact Filippo
-  Gheri (ESS)**
+  and is thus not publicly available, to obtain the data please
+  contact Filippo Gheri (ESS)**
 
-* **radarChart.R**
+### **radarChart.R**
 
 This piece of code produces the prototype of the radar chart that was
 proposed to the CPMB, the labels were processed in Microsoft
