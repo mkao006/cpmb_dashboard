@@ -29,51 +29,51 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
        \\def\\@@super#1{\\@ifnextchar_{\\@super@sub{#1}}{\\textsuperscript{#1}}}
        \\def\\@@sub#1{\\@ifnextchar^{\\@sub@super{#1}}{\\textsubscript{#1}}}
        \\def^{\\let\\@next\\relax\\ifmmode\\@super\\else\\let\\@next\\@@super\\fi\\@next}
-       \\def_{\\let\\@next\\relax\\ifmmode\\@sub\\else\\let\\@next\\@@sub\\fi\\@next}
-     \\renewcommand\\scorecardname{Dashboard}
-     \\renewcommand\\listofscorecardsname{List of Dashboards}
-     \\makeatother
-     \\begin{document}
-     \\listofscorecards
-     \\clearpage", file = file, append = FALSE)
+       \\def_{\\let\\@next\\relax\\ifmmode\\@sub\\else\\let\\@next\\@@sub\\fi\\@next}",
+     ## \\renewcommand\\scorecardname{Dashboard},
+     ## \\renewcommand\\listofscorecardsname{List of Dashboards}
+     "\\makeatother
+     \\begin{document}",
+     ## \\listofscorecards
+     "\\clearpage", file = file, append = FALSE)
 
   for(i in unique(data$areaCode)){
     print(unique(data[which(data$areaCode == i), "areaName"]))
     cat("\\clearpage", file = file, append = TRUE)
     if(layout == "benchmark"){
       cat("\\colorlet{scorecardcolor}{blue!50!pink}
-           \\begin{scorecard}{lccccccc}
-           \\caption{",
-          unique(data[data$areaCode == i, "areaName"]),
-          " Dashboard} \\\\
-          \\scorecardcolhead{1}{c}{Indicator Name and unit} & 
-          \\scorecardcolhead{2}{c}{Baseline} & 
-          \\scorecardcolhead{2}{c}{Current} & 
-          \\scorecardcolhead{1}{c}{Target} &
-          \\scorecardcolhead{1}{c}{Trend} \\\\
+           \\begin{scorecard}{lcccccc}",
+          ##  \\caption{",
+          ## unique(data[data$areaCode == i, "areaName"]),
+          ## " Dashboard} \\\\
+          "\\scorecardcolhead{1}{c}{Indicator Name and unit} &
+          \\scorecardcolhead{2}{c}{Baseline} &
+          \\scorecardcolhead{2}{c}{Current} &" ,
+          ## \\scorecardcolhead{1}{c}{Target} &
+          "\\scorecardcolhead{1}{c}{Trend} \\\\
           \\scorecardcolhead{1}{c}{} &
-          \\scorecardcolhead{1}{c}{Value} & 
-          \\scorecardcolhead{1}{c}{Year} & 
-          \\scorecardcolhead{1}{c}{Value} & 
+          \\scorecardcolhead{1}{c}{Value} &
           \\scorecardcolhead{1}{c}{Year} &
+          \\scorecardcolhead{1}{c}{Value} &
+          \\scorecardcolhead{1}{c}{Year} &",
+          ## \\scorecardcolhead{1}{c}{} &
+          "\\scorecardcolhead{1}{c}{}
+          \\endfirsthead",
+          ## \\caption[]{",
+          ## unique(data[data$areaCode == i, "areaName"]),
+          ## " Dashboard (continued)} \\\\
+          "\\scorecardcolhead{1}{c}{Indicator Name and unit} &
+          \\scorecardcolhead{2}{c}{Baseline} &
+          \\scorecardcolhead{2}{c}{Current} &",
+          ## \\scorecardcolhead{1}{c}{Target} &
+          "\\scorecardcolhead{1}{c}{Trend} \\\\
           \\scorecardcolhead{1}{c}{} &
-          \\scorecardcolhead{1}{c}{}
-          \\endfirsthead
-          \\caption[]{",
-          unique(data[data$areaCode == i, "areaName"]),
-          " Dashboard (continued)} \\\\
-          \\scorecardcolhead{1}{c}{Indicator Name and unit} & 
-          \\scorecardcolhead{2}{c}{Baseline} & 
-          \\scorecardcolhead{2}{c}{Current} & 
-          \\scorecardcolhead{1}{c}{Target} &
-          \\scorecardcolhead{1}{c}{Trend} \\\\
-          \\scorecardcolhead{1}{c}{} &
-          \\scorecardcolhead{1}{c}{Value} & 
-          \\scorecardcolhead{1}{c}{Year} & 
-          \\scorecardcolhead{1}{c}{Value} & 
+          \\scorecardcolhead{1}{c}{Value} &
           \\scorecardcolhead{1}{c}{Year} &
-          \\scorecardcolhead{1}{c}{} &
-          \\scorecardcolhead{1}{c}{}
+          \\scorecardcolhead{1}{c}{Value} &
+          \\scorecardcolhead{1}{c}{Year} &",
+          ## \\scorecardcolhead{1}{c}{} &
+          "\\scorecardcolhead{1}{c}{}
           \\endhead
           \\hline
           \\endfoot\n",
@@ -88,7 +88,12 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
                           addPoints = FALSE,
                           layout = layout)
       cat("\n \\end{scorecard}",
-          file = file, append = TRUE)    
+          file = file, append = TRUE)
+
+      ## This is a hack line for the graph
+      cat("\\centering \n ", file = file, append = TRUE)
+      ## cat("\n \\includegraphics[scale = 0.7]{testRadar} ",
+      ##     file = file, append = TRUE)
     } else if(layout == "timeseries"){
       cat("\\colorlet{scorecardcolor}{magenta!50!yellow}
            \\small
@@ -107,8 +112,8 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
           " (continued)} \\\\
           \\scorecardcolhead{1}{c}{Indicator Name} &",
           paste("\\scorecardcolhead{1}{c}{", startYear:endYear, "}",
-                sep = "", collapse = " &\n"),          
-          "&\\scorecardcolhead{1}{c}{Trend} 
+                sep = "", collapse = " &\n"),
+          "&\\scorecardcolhead{1}{c}{Trend}
           \\endhead
           \\hline
           \\endfoot",
@@ -116,13 +121,18 @@ scorecardFAO = function(variable, data, file, startYear, endYear,
       dataToScorecardsFAO(countryCode = i,
                           baselineYear = baselineYear,
                           startYear = startYear,
-                          endYear = endYear,                          
+                          endYear = endYear,
                           data = data,
                           file = file,
                           variable = variable,
                           addPoints = FALSE,
                           layout = layout)
-      cat("\n \\end{scorecard} ", file = file, append = TRUE)    
+      cat("\n \\end{scorecard} ", file = file, append = TRUE)
+
+      ## This is a hack line for the graph
+      ## cat("\n \\includegraphics[scale = 0.7]{testRadar} ",
+      ##     file = file, append = TRUE)
+
     }
   }
   cat("\n \\end{document}", file = file, append = TRUE)
@@ -144,17 +154,17 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
     cat(" & ", file = file, append = TRUE)
     if(layout == "benchmark"){
       ## Print the baseline and current year
-      baselineYear = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
-        Year == max(Year), select = Year))
-      baseValue = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
-        Year == baselineYear, select = value))
+        baselineYear = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
+            Year == max(Year), select = Year))
+        baseValue = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
+            Year == baselineYear, select = value))
       cat(ifelse(length(baseValue) == 0L, "",
                  formatC(baseValue, digits = 2, format = "fg")),
           file = file, append = TRUE)
       cat(" & ", file = file, append = TRUE)
       cat(baselineYear, file = file, append = TRUE)
       cat(" & ", file = file, append = TRUE)
-      
+
       maxYear = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
         Year == max(Year), select = Year))
       maxValue = unlist(subset(tmp.df[!is.na(tmp.df$value), ],
@@ -162,11 +172,11 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
       cat(ifelse(length(maxValue) == 0L, "",
                  formatC(maxValue, digits = 2, format = "fg")),
           file = file, append = TRUE)
-      cat(" & ", file = file, append = TRUE)      
+      cat(" & ", file = file, append = TRUE)
       cat(maxYear, file = file, append = TRUE)
       cat(" & ", file = file, append = TRUE)
       ## TODO (Michael): Insert code for targets
-      cat(" & ", file = file, append = TRUE)
+      ## cat(" & ", file = file, append = TRUE)
 
       ## Make the sparkline
       spark.df = tmp.df[tmp.df$Year %in% startYear:endYear, ]
@@ -178,8 +188,9 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
       if(length(values) > 5){
         x = (years - min(years))/(max(years) - min(years))
         max_value = (max(abs(values), na.rm = TRUE) * 1.2)
+        min_value = min(values, na.rm = TRUE)
         max_value[max_value == 0] = 1
-        new_values = values/max_value
+        new_values = (values - min_value)/(max_value - min_value)
         n.values = length(new_values)
         cat("\n \\begin{sparkline}{",
             length(new_values), "}", file = file, append = TRUE)
@@ -187,11 +198,11 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
                                 collapse = " "),
             "/", file = file, append = TRUE)
         cat("\n \\end{sparkline}", file = file, append = TRUE)
-      }      
-      
+      }
+
       cat("\\\\", file = file, append = TRUE)
     } else {
-      
+
       spark.df = tmp.df[tmp.df$Year %in% startYear:endYear, ]
       cat(paste(gsub("NA|NaN", "",
                      formatC(spark.df$value, digit = 2, format = "fg")),
@@ -220,11 +231,11 @@ dataToScorecardsFAO = function(countryCode, variable, data, file,
 }
 
 sanitizeToLatex = function(str, html=FALSE, type=c("text","table")) {
-    
+
     type = match.arg(type)
-    
+
     result = as.character(str)
-    
+
     result = gsub("\\\\-","TEX.BACKSLASH",result)
     result = gsub("\\\\","SANITIZE.BACKSLASH",result)
     result = gsub("$","\\$",result,fixed=TRUE)
@@ -258,13 +269,13 @@ sanitizeToLatex = function(str, html=FALSE, type=c("text","table")) {
       	dotSlash=grepl("\\url\\{.*\\.}",result)
       	result[dotSlash] = gsub("\\.\\}","\\}\\.",result[dotSlash])
     }
-    
+
     ## special expressions
     result = gsub("km2", "km\\textsuperscript{2}", result, fixed = TRUE)
     result = gsub("m3", "m\\textsuperscript{3}", result, fixed = TRUE)
     result = gsub("CO2", "CO\\textsubscript{2}", result, fixed = TRUE)
-    
-    
+
+
     return(result)
 }
 
@@ -280,10 +291,10 @@ translateQuantity = function(vec){
         transVec[which(vec == "hundred")] = 100
         transVec[which(vec == "thousand")] = 1000
         transVec[which(vec == "ten thousand")] = 10000
-        transVec[which(vec == "hundred thousand")] = 100000    
+        transVec[which(vec == "hundred thousand")] = 100000
         transVec[which(vec == "million")] = 1e6
         transVec[which(vec == "ten million")] = 1e7
-        transVec[which(vec == "hundred million")] = 1e8    
+        transVec[which(vec == "hundred million")] = 1e8
         transVec[which(vec == "billion")] = 1e9
         transVec[which(vec == "trillion")] = 1e12
     } else if(type == "numeric"){

@@ -3,11 +3,14 @@
 ## Date: 2013-08-02
 ########################################################################
 
+library(plyr)
+library(reshape2)
+library(data.table)
 
-SO = "so2"
+SO = "so5"
 path = paste0(getwd(), "/dashboard_", SO,"/")
 template = "benchmark"
-version = "A"
+version = "B"
 texFileName = paste0(SO, "dashboard", template, version, ".tex")
 pdfFileName = gsub("tex", "pdf", texFileName)
 
@@ -25,12 +28,14 @@ dissemination.df = dissemination.df[which(dissemination.df[, paste0("SCORECARD_"
 ## Load statistical yearbook data
 ##
 ## NOTE (Michael): Need access to the SYB data base
-load("~/Dropbox/SYBproject/RegionalBooks/Data/SO.RData")
+## load("~/Dropbox/SYBproject/RegionalBooks/Data/SO.RData")
+load("C:/Users/kao/Dropbox/SYBproject/RegionalBooks/Data/SO.RData")
 ## final.df = M49.lst$dataset
 final.df = SO.df
 final.df$UN_CODE = NULL
 final.df$FAO_TABLE_NAME = NULL
-final.df = final.df[final.df$Area == "Territory", ]
+## final.df = final.df[final.df$Area == "Territory", ]
+final.df = final.df[final.df$Area == "M49world", ]
 
 ## Manually convert back zero to NA for GHG data
 final.df[final.df$Year %in% c(2011:2013),
@@ -47,7 +52,7 @@ allData.df = arrange(final.df, FAOST_CODE, Year)
 allData.dt = data.table(allData.df)
 ## allData.dt[, AQ.WAT.PROD.SH.NO := NV.AGR.TOTL.KD/AQ.WAT.WWAGR.MC.NO]
 if(SO == "so4"){
-  tmp = read.csv(file = "./old_manual_data/GV.VS.FPI.IN.NO.csv",
+  tmp = read.csv(file = "./GV.VS.FPI.IN.NO.csv",
     header = TRUE, stringsAsFactors = FALSE)
   allData.dt = merge(allData.dt, tmp, by = "Year", all.x = TRUE)
 }
@@ -73,17 +78,27 @@ SO.df = merge(SO.df,
                            c("FAOST_CODE", "ABBR_FAO_NAME")],
   all.x = TRUE, by = "FAOST_CODE")
 
+if(SO == "so2"){
+    SO.df$DT.OUT.UTUN.POP.SH.HACK = SO.df$QI.NPCPIN.CRPS.IN.NO
+    SO.df$DT.OUT.UTST.POP.SH.HACK = SO.df$QI.NPCPIN.CRPS.IN.NO
+}
+
+if(SO == "so5"){
+    SO.df$DO.OUT.ACDFD.DP.NO.HACK = runif(NROW(SO.df))
+    SO.df$SH.DYN.MORT.HACK = runif(NROW(SO.df))
+}
+
 
 ## Check whether all variables are included
 if(NROW(dissemination.df[which(dissemination.df[, paste0("SCORECARD_", version)]), c("DATA_KEY", "SERIES_NAME")][!dissemination.df[which(dissemination.df[, paste0("SCORECARD_", version)]), "DATA_KEY"] %in% colnames(SO.df),]) != 0L){
   warning("Some variables are not available in the data base, missing values are inserted")
   missVar = dissemination.df[which(dissemination.df[, paste0("SCORECARD_", version)]), c("DATA_KEY", "SERIES_NAME")][!dissemination.df[which(dissemination.df[, paste0("SCORECARD_", version)]), "DATA_KEY"] %in% colnames(SO.df),]
   cat(missVar[, 1], file = paste0(path, SO, "_missvar.txt"))
-  SO.df[, missVar[, "DATA_KEY"]] = rep(NA, NROW(SO.df))  
+  SO.df[, missVar[, "DATA_KEY"]] = rep(NA, NROW(SO.df))
 }
 
 ## Scale the units
-source("~/Dropbox/SYBproject/Packages/InternalCodes/scaleUnit.R")
+source("C:/Users/kao/Dropbox/SYBproject/Packages/InternalCodes/scaleUnit.R")
 
 thirdQuantileUnit = function(x){
   q3 = quantile(x, prob = 0.75, na.rm = TRUE)
@@ -97,6 +112,9 @@ scale.df = data.frame(DATA_KEY = dissemination.df$DATA_KEY[dissemination.df$DATA
   MULTIPLIER = sapply(SO.df[, dissemination.df$DATA_KEY[dissemination.df$DATA_KEY %in%
     colnames(SO.df)]],
   FUN = thirdQuantileUnit))
+
+## Remove all scaling for the world
+scale.df$MULTIPLIER = 1
 
 dissemination.df = merge(dissemination.df, scale.df, all.x = TRUE)
 
@@ -153,12 +171,14 @@ scorecard.df = sortedFAO.df[, c("areaCode", "areaName", "Year",
   "variable", "indicatorName", "topic", "value")]
 
 set.seed(587)
-mySampleCountry = sample(x = scorecard.df$areaCode, size = 10)
+## mySampleCountry = sample(x = unique(scorecard.df$areaCode), size = 10)
+mySampleCountry = unique(scorecard.df$areaCode)
+scorecard.df$areaName = "World"
 scorecardFAO(variable = unique(scorecard.df$variable),
              data = scorecard.df[scorecard.df$areaCode %in%
                  mySampleCountry, ],
              file = paste0(path, texFileName),
-             startYear = 2002, endYear = 2012,
+             startYear = 2002, endYear = 2013, baselineYear = 2000,
              layout = template)
 
 ## Create meta data table
